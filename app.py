@@ -31,7 +31,8 @@ def show_image():
 @app.route('/article/<int:id>')
 def article(id):
     print(type(id))
-    return render_template('article.html')
+    articles = Articles()
+    return render_template('article.html', data =[articles, id])
 
 
 if __name__ =='__main__':
