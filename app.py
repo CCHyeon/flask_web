@@ -68,9 +68,22 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        return "LOGED PAGE"
+        id = request.form.get('email')
+        pw = request.form.get('password')
+        print([id, pw])
+
+        sql ='SELECT * FROM users WHERE email = %s'
+        cursor = db.cursor()
+        cursor.execute(sql, [id])
+        users = cursor.fetchone()
+        print(users)
+    if users == 'None':
+        return redirect(url_for('login'))
     else:
+        if pbkdf2_sha256.verify
         return "LOGIN PAGE"
+
+    return "Success"
 
 
 
