@@ -61,7 +61,7 @@ def register():
             return "Invalid Password"
             
     else:
-        return "GET Success"
+        return render_template('register.html')
 
 
 
