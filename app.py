@@ -14,10 +14,6 @@ db = pymysql.connect(host='localhost',
                     passwd='1234',
                     db='myflaskapp')
 
-
-
-
-
 @app.route('/')
 def index():
     print("Success")
@@ -31,10 +27,9 @@ def about():
     return render_template('about.html',hello="CChyeon")
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register',methods=['GET' ,'POST'])
 def register():
     if request.method == 'POST':
-
         # data = request.body.get('author')
         name = request.form.get('name')
         email = request.form.get('email')
@@ -42,70 +37,90 @@ def register():
         re_password = request.form.get('re_password')
         username = request.form.get('username')
         # name = form.name.data
-        if(pbkdf2_sha256.verify(re_password,password)):
-            print(pbkdf2_sha256.verify(re_password,password))
+        if(pbkdf2_sha256.verify(re_password,password )):
+            print(pbkdf2_sha256.verify(re_password,password ))
             cursor = db.cursor()
-            sql = ''' 
-                INSERT INTO users(name, email, username, password)
-                VALUES(%s, %s, %s, %s)
-            '''
-            cursor.execute(sql, (name, email, username, password))
+            sql = '''
+                INSERT INTO users (name , email , username , password) 
+                VALUES (%s ,%s, %s, %s )
+             '''
+            cursor.execute(sql , (name,email,username,password ))
             db.commit()
-            db.close()
-
             # cursor = db.cursor()
             # cursor.execute('SELECT * FROM users;')
             # users = cursor.fetchall()
-            
-
-            return "register Success"
+            return redirect(url_for('login'))
         else:
             return "Invalid Password"
-            
+        db.close()
     else:
         return render_template('register.html')
 
-@app.route('/login', methods=['GET', 'POST'])
+
+@app.route('/login',methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        id = request.form.get('email')
+        id = request.form['email']
         pw = request.form.get('password')
-        print([id, pw])
-
-        sql ='SELECT * FROM users WHERE email = %s'
-        cursor = db.cursor()
+        print([id])
+        sql='SELECT * FROM users WHERE email = %s'
+        cursor  = db.cursor()
         cursor.execute(sql, [id])
         users = cursor.fetchone()
         print(users)
-    if users == 'None':
-        return redirect(url_for('login'))
+        if users ==None:
+            return redirect(url_for('login'))
+        else:
+            if pbkdf2_sha256.verify(pw,users[4] ):
+                return redirect(url_for('articles'))
+            else:
+                return redirect(url_for('login'))
     else:
-        if pbkdf2_sha256.verify
-        return "LOGIN PAGE"
-
-    return "Success"
+        return render_template('login.html')
 
 
 
-@app.route('/articles', methods=['GET', 'POST'])
+@app.route('/articles')
 def articles():
-    print("Success")
-    # return "TEST"
-    articles = Articles()
-    print(len(articles))
-    return render_template('articles.html',articles=articles)
+    # articles = Articles()
+    # print(len(articles))
+    cursor = db.cursor()
+    sql = 'SELECT * FROM topic;'
+    cursor.execute(sql)
+    data = cursor.fetchall()
+    print(data)
+    return render_template('articles.html',articles=data)
+    # return "GET Success"
 
-@app.route('/test')
-def show_image():
-    return render_template('image.html')
 
 @app.route('/article/<int:id>')
 def article(id):
-    print(id)
+    print(type(id))
     articles = Articles()[id-1]
-    print(articles)
+    # print(articles)
     return render_template('article.html', data =articles)
     #return "Success"
+
+@app.route('/add_articles', methods=['GET', 'POST'])
+def add_articles():
+    if request.method == 'POST':
+        # print(request.form['title'])
+        title = request.form['title']
+        body = request.form['body']
+        author = request.form['author']
+        cursor = db.cursor()
+        sql = '''
+            INSERT INTO topic (title , body, author) 
+            VALUES (%s ,%s, %s)
+            '''
+        cursor.execute(sql, (title, body, author))
+        db.commit()
+        
+        return redirect("/articles")
+    else:
+        return render_template('add_articles.html')
+
+        db.close()
 
 
 if __name__ =='__main__':
